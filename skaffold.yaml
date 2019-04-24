@@ -1,0 +1,30 @@
+apiVersion: skaffold/v1beta2
+kind: Config
+build:
+  artifacts:
+  - image: changeme
+    context: .
+    docker: {}
+  tagPolicy:
+    envTemplate:
+      template: '{{.DOCKER_REGISTRY}}/venkatamatrix/jenkins-x-image:{{.VERSION}}'
+  local: {}
+deploy:
+  kubectl: {}
+profiles:
+- name: dev
+  build:
+    artifacts:
+    - docker: {}
+    tagPolicy:
+      envTemplate:
+        template: '{{.DOCKER_REGISTRY}}/venkatamatrix/jenkins-x-image:{{.DIGEST_HEX}}'
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: jenkins-x-image
+        chartPath: charts/jenkins-x-image
+        setValueTemplates:
+          image.repository: '{{.DOCKER_REGISTRY}}/venkatamatrix/jenkins-x-image'
+          image.tag: '{{.DIGEST_HEX}}'
